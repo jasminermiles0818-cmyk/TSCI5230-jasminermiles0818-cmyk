@@ -477,7 +477,7 @@ iris %>% mutate(Sepal.Length.Group=cut(Sepal.Length
 
 #+ df_bind_rows
 iris_first <- head(iris,3)
-iris_last <- tail(iris,3)
+iris_last library(dplyr)<- tail(iris,3)
 bind_rows(iris_first,iris_last)
 
 #' `bind_cols()` puts data frames or vectors next to each other. This only makes
@@ -641,4 +641,5 @@ convert_temperature <- function(x,from='C'){
   if(from=='F') return((x-32)*5/9)
 }
 convert_temperature(0)
-convert_temperature(32,from='F')
+convert_temperature(32,
+library(pak)pak::pak('bokov/R-syntax-drills-student-package')
