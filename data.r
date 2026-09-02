@@ -35,21 +35,21 @@ library(stringr) #string manipulation
 
 options(max.print=500);
 panderOptions('table.split.table',Inf); panderOptions('table.split.cells',Inf);
-datalocation <- "C:/Users/nahid/OneDrive/Desktop/class-5230/"
+datalocation <- "~/Downloads/archive/"
 list.files(datalocation,full.names = T)
 #TEST <- import("C:/Users/nahid/OneDrive/Desktop/class/careplans.csv")
-dat <- sapply(list.files(datalocation, full.names = TRUE), import)
+dat <- sapply(list.files(datalocation, full.names = TRUE), import,simplify = FALSE) %>% 
+  setNames(.,basename(names(.)))
 # data ingestion ----
 
 # Your two data frames
 
-patients <- dat$`C:/Users/nahid/OneDrive/Desktop/class-5230/patients.csv`
 
-conditions <- dat$`C:/Users/nahid/OneDrive/Desktop/class-5230/conditions.csv`
+
 
 # First, subset to acute/viral conditions
 
-acute_viral <- conditions %>%
+acute_viral <- dat$conditions.csv %>%
   
   filter(grepl("acute|viral", DESCRIPTION, ignore.case = TRUE))
 
@@ -61,7 +61,7 @@ acute_viral <- conditions %>%
 acute_viral_age <- acute_viral %>%
   
   left_join(
-    patients %>% select(Id, BIRTHDATE),
+    dat$patients.csv %>% select(Id, BIRTHDATE),
     by = c("PATIENT" = "Id")
   ) %>%
   
@@ -73,10 +73,28 @@ acute_viral_age <- acute_viral %>%
     
     age_at_encounter = time_length(
       
-      interval(BIRTHDATE, START),unit = "years"
+      interval(BIRTHDATE, START),unit = "years"))
 
-    )) 
+  
+      # Acute Viral Pharyngitis ----
+temp <- filter(dat$conditions.csv,DESCRIPTION=="Acute viral pharyngitis (disorder)") %>% 
+  mutate(month=floor_date(START, unit = "month")) %>% 
+  group_by(month) %>%  summarise(count=n())   
 
+lm(count~month,temp)
+
+
+conditionslope <-  mutate(dat$conditions.csv,month=floor_date(START, unit = "month")) %>% 
+  group_by(month,CODE,DESCRIPTION) %>%  summarise(count=n())   %>% 
+  group_by(CODE,DESCRIPTION) %>% filter(year(month)>=2023 & length(unique(month))>10) %>% 
+  summarise(events=lm(count~month)$coefficients[2]) %>% arrange(desc(events)) 
+ 
+plot(conditionslope$events,type="l")                                                                 
+abline(v=25,col="green")
+#25 seems like a reasonable cutoff for the conditions
+topconditionslope<- head(conditionslope,25)
+  
+c()
 
 
 
